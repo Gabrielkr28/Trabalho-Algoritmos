@@ -4,6 +4,11 @@
  */
 package Interface;
 
+import Service.Analyzer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author Gabriel Krzizanowski
@@ -38,7 +43,14 @@ public class MainScreen extends javax.swing.JFrame {
 
         lbArquivo.setText("Arquivo:");
 
+        tfCaminho.setText("C:\\Users\\Pichau\\Desktop\\htmlTeste.html");
+
         btAnalisar.setText("Analisar");
+        btAnalisar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btAnalisarActionPerformed(evt);
+            }
+        });
 
         taResultado.setColumns(20);
         taResultado.setRows(5);
@@ -91,6 +103,15 @@ public class MainScreen extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btAnalisarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAnalisarActionPerformed
+        Analyzer analyzer = new Analyzer();
+        try {
+            analyzer.fileAnalyzer(tfCaminho.getText());
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex.getMessage());
+        }
+    }//GEN-LAST:event_btAnalisarActionPerformed
 
     /**
      * @param args the command line arguments

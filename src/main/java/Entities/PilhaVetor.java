@@ -46,6 +46,23 @@ public class PilhaVetor<T> implements Pilha<T> {
         }
         return info[tamanho - 1];
     }
+    
+    public void inverterPilha(){
+        var newInfo = (T[]) new Object[limite];
+        int newTamanho = 0;
+        while(!estaVazia()){
+            if (tamanho.equals(limite)) {
+                throw new PilhaCheiaException(null);
+            }
+            else {
+                newInfo[newTamanho] = pop();
+                newTamanho++;
+            }
+        }
+        
+        this.info = newInfo;
+        this.tamanho = newTamanho;
+    }
 
     @Override
     public boolean estaVazia() {
@@ -64,7 +81,7 @@ public class PilhaVetor<T> implements Pilha<T> {
     public String toString() {
         String resultado = "";
 
-        for (int i = tamanho; i >= 0; i++) {
+        for (int i = tamanho - 1; i >= 0; i--) {
             resultado += info[i].toString();
             if (i > 0) {
                 resultado = resultado + ",";
@@ -79,4 +96,7 @@ public class PilhaVetor<T> implements Pilha<T> {
         }
     }
 
+    public int size(){
+        return tamanho;
+    }
 }
