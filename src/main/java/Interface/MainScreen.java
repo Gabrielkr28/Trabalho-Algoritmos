@@ -43,7 +43,7 @@ public class MainScreen extends javax.swing.JFrame {
 
         lbArquivo.setText("Arquivo:");
 
-        tfCaminho.setText("C:\\Users\\Pichau\\Desktop\\htmlTeste.html");
+        tfCaminho.setText("D:\\Downloads\\teste.html");
 
         btAnalisar.setText("Analisar");
         btAnalisar.addActionListener(new java.awt.event.ActionListener() {
@@ -110,6 +110,11 @@ public class MainScreen extends javax.swing.JFrame {
             analyzer.fileAnalyzer(tfCaminho.getText());
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, ex.getMessage());
+            try {
+                throw ex;
+            } catch (Exception ex1) {
+                Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex1);
+            }
         }
     }//GEN-LAST:event_btAnalisarActionPerformed
 

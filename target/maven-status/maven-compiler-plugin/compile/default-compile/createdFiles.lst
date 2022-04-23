@@ -1,3 +1,11 @@
+Interface\MainScreen$2.class
+Entities\PilhaCheiaException.class
+Entities\NoLista.class
+Entities\ListaEncadeada.class
+Entities\PilhaVaziaException.class
 Interface\MainScreen$1.class
-com\mycompany\trabalho1\algoritmos\Trabalho1Algoritmos.class
+Entities\Pilha.class
+Entities\PilhaVetor.class
+Entities\Tag.class
+Service\Analyzer.class
 Interface\MainScreen.class
