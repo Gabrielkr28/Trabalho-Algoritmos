@@ -20,18 +20,28 @@ import java.util.regex.Pattern;
  */
 public class Analyzer {
 
-    private Pattern pattern;
-    private Matcher matcher;
+    private static Pattern pattern;
+    private static Matcher matcher;
 
     private static final String tagFormat = "<(\"[^\"]*\"|'[^']*'|[^'\">])*>";
-    private PilhaVetor<String> pilhaInicial = new PilhaVetor<String>(100);
-    private PilhaVetor<String> pilhaFinal = new PilhaVetor<String>(100);
-    ListaEncadeada<Tag> pilhaValidas = new ListaEncadeada<Tag>();
-    ListaEncadeada<String> listaValidasString = new ListaEncadeada<String>();
-    Tag[] tagsCorretas = new Tag[100];
-    Tag[] tagsIncoretas = new Tag[100];
+    static private PilhaVetor<String> pilhaInicial = new PilhaVetor<String>(100);
+    static private PilhaVetor<String> pilhaFinal = new PilhaVetor<String>(100);
+    static ListaEncadeada<Tag> pilhaValidas = new ListaEncadeada<Tag>();
+    static ListaEncadeada<String> listaValidasString = new ListaEncadeada<String>();
+    static Tag[] tagsCorretasFinais = new Tag[100];
+    static Tag[] tagsIncoretasFinais = new Tag[100];
+    static Tag[] tagsCorretasIniciais = new Tag[100];
+    static Tag[] tagsIncoretasIniciais = new Tag[100];
 
-    private final String[] singletons = {
+    public static Tag[] getTagsIncorretasFinais() {
+        return tagsIncoretasFinais;
+    }
+    
+    public static Tag[] getTagsIncorretasInciais() {
+        return tagsIncoretasIniciais;
+    }
+    
+    private static final String[] singletons = {
         "meta",
         "base",
         "br",
@@ -44,9 +54,10 @@ public class Analyzer {
         "link",
         "param",
         "source",
-        "!DOCTYPE"};
+        "!DOCTYPE"
+    };
 
-    public void fileAnalyzer(String path) throws Exception {
+    public static void fileAnalyzer(String path) throws Exception {
         StringBuilder htmlFile = new StringBuilder();
         if (!path.endsWith(".html")) {
             throw new Exception("Informe somente extensões .html!");
@@ -94,64 +105,21 @@ public class Analyzer {
             }
             br.close();
 
-            System.out.println("Inicial " + pilhaInicial.toString());
-//            pilhaInicial.inverterPilha();
-            System.out.println("Inicial " + pilhaInicial.toString());
-            System.out.println("Final  " + pilhaFinal.toString());
-            System.out.println("Singletons  " + listaValidasString.toString());
+            Tag[] f = converteVetorStringToTag(convertePilhaParaVetor(pilhaFinal));
+            Tag[] i = converteVetorStringToTag(convertePilhaParaVetor(pilhaInicial));
 
-            System.out.println("---------------------------");
-            
-            Tag[] c = contaTags(convertePilhaParaVetor(pilhaInicial));
-            repopularPilha(c, pilhaInicial);
-            for (Tag a : c) {
-                if (a != null) {
-                    System.out.println(a.getName() + "\n" + a.getCount());
-                }
+            repopularPilha(f, pilhaFinal);
+            repopularPilha(i, pilhaInicial);
 
-            }
-            Tag[] x = contaTags(convertePilhaParaVetor(pilhaFinal));
-            repopularPilha(x, pilhaFinal);
-            for (Tag a : x) {
-                if (a != null) {
-                    System.out.println(a.getName() + "\n" + a.getCount());
-                }
+            Tag[] f1 = converteVetorStringToTag(convertePilhaParaVetor(pilhaFinal));
+            Tag[] i1 = converteVetorStringToTag(convertePilhaParaVetor(pilhaInicial));
 
-            }
-
-            for (Tag a : contaTags(converteEncadeadaVetor(listaValidasString))) {
-                if (a != null) {
-                    System.out.println(a.getName() + "\n" + a.getCount());
-                }
-
-            }
-            
-            
-            Tag[] f = contaTags(convertePilhaParaVetor(pilhaFinal));
-            Tag[] i = contaTags(convertePilhaParaVetor(pilhaInicial));
-            
             validaTagsIniciais(i, f);
-            validaTagsFinais(i, f);
+            validaTagsFinais(i1, f1);
             
-            System.out.println("Corretas ------");
-            
-            for(Tag a : tagsCorretas){
-                if (a != null) {
-                    System.out.println(a.getName() + "\n" + a.getCount());
-                }
-            }
-            
-            System.out.println("Incorretas ----");
-            
-            for(Tag a : tagsIncoretas){
-                if (a != null) {
-                    System.out.println(a.getName() + "\n" + a.getCount());
-                }
-            }
-
 //            validaTags();
         } catch (Exception ex) {
-            System.out.println("Deu ruim" + ex.getMessage());
+            System.out.println("Exception: " + ex.getMessage());
             throw new Exception(ex);
         }
     }
@@ -187,7 +155,7 @@ public class Analyzer {
 //            count = 0;
 //        }
 //    }
-    private boolean singleton(String valor) {
+    private static boolean singleton(String valor) {
         for (int i = 0; i < singletons.length; i++) {
             if (valor.equals(singletons[i])) {
                 return true;
@@ -197,7 +165,7 @@ public class Analyzer {
         return false;
     }
 
-    private void verificaTag(String tag) {
+    private static void verificaTag(String tag) {
         if (tag.contains("/")) {
             tag = tag.split("<")[1].split(">")[0];
 
@@ -219,23 +187,16 @@ public class Analyzer {
         }
     }
 
-    public Tag[] contaTags(String[] tags) {
+    public static Tag[] converteVetorStringToTag(String[] tags) {
         Tag[] vetorTags = new Tag[tags.length];
         for (int i = 0; i < tags.length; i++) {
-            int posicaoTag = pesquisaTagNome(tags[i], vetorTags);
-            if (posicaoTag == -1) {
-                Tag tag = new Tag(tags[i], 1);
-                vetorTags[i] = tag;
-            } else {
-                Tag tag = vetorTags[posicaoTag];
-                tag.setCount(tag.getCount() + 1);
-                vetorTags[posicaoTag] = tag;
-            }
+            Tag tag = new Tag(tags[i], 1);
+            vetorTags[i] = tag;
         }
         return vetorTags;
     }
 
-    private String[] convertePilhaParaVetor(PilhaVetor<String> pilha) {
+    private static String[] convertePilhaParaVetor(PilhaVetor<String> pilha) {
         String[] stringTags = new String[pilha.size()];
         PilhaVetor<String> pilhaVetor = pilha;
         int size = pilhaVetor.size();
@@ -250,25 +211,57 @@ public class Analyzer {
         return stringTags;
     }
 
-    private String[] converteEncadeadaVetor(ListaEncadeada<String> lista) {
-        String[] stringTags = new String[lista.obterComprimento()];
-        ListaEncadeada<String> listaEncadeada = lista;
-        int size = lista.obterComprimento();
-        for (int i = 0; i < size; i++) {
-            String tagName = listaEncadeada.obterNo(i).getInfo();
-            if (tagName != null) {
-                stringTags[i] = tagName;
+    public static Tag[] contarTags() {
+        Tag[] tags = new Tag[tagsCorretasIniciais.length];
+        for (int i = 0; i < tagsCorretasIniciais.length; i++) {
+            Tag tagCorreta = tagsCorretasIniciais[i];
+            if (tagCorreta != null) {
+                int posicaoTag = pesquisaTagPorNome(tagCorreta.getName(), tags);
+                if (posicaoTag == -1) {
+                    tags[i] = tagCorreta;
+                } else {
+                    Tag tagExistente = tags[posicaoTag];
+                    tagExistente.setCount(tagExistente.getCount() + 1);
+                    tags[posicaoTag] = tagExistente;
+                }
             }
-
         }
-
-        return stringTags;
+        return tags;
     }
-
-    private int pesquisaTagNome(String valor, Tag[] tags) {
+    
+    public static Tag[] contarTagsSingletons() {
+        Tag[] tagsSingleton = converteListaEncadeadaParaTag(listaValidasString);
+        Tag[] tags = new Tag[tagsSingleton.length];
         for (int i = 0; i < tags.length; i++) {
-            if (tags[i] != null) {
-                if (tags[i].getName().equals(valor)) {
+            Tag tagSingleton = tagsSingleton[i];
+            if (tagSingleton != null) {
+                int posicaoTag = pesquisaTagPorNome(tagSingleton.getName(), tags);
+                if (posicaoTag == -1) {
+                    tags[i] = tagSingleton;
+                } else {
+                    Tag tagExistente = tags[posicaoTag];
+                    tagExistente.setCount(tagExistente.getCount() + 1);
+                    tags[posicaoTag] = tagExistente;
+                }
+            }
+        }
+        return tags;
+    }
+    
+    private static Tag[] converteListaEncadeadaParaTag(ListaEncadeada<String> listaEncadeada) {
+        Tag[] tags = new Tag[listaEncadeada.obterComprimento()];
+        for (int i = 0; i < tags.length; i++) {
+            tags[i] = new Tag(listaEncadeada.obterNo(i).getInfo(), 1);
+        }
+        return tags;
+    }
+        
+
+    private static int pesquisaTagPorNome(String nome, Tag[] tags) {
+        for (int i = 0; i < tags.length; i++) {
+            Tag tag = tags[i];
+            if (tag != null) {
+                if (tag.getName().equals(nome)) {
                     return i;
                 }
             }
@@ -276,66 +269,61 @@ public class Analyzer {
         return -1;
     }
 
-    private void validaTagsIniciais(Tag[] iniciais, Tag[] finais) {
+    private static void validaTagsIniciais(Tag[] iniciais, Tag[] finais) {
         Tag[] newIniciais = iniciais;
         Tag[] newFinais = finais;
         boolean control = false;
         for (int i = 0; i < newIniciais.length; i++) {
-            if (newIniciais[i] != null) {
-                for (int j = 0; j < newFinais.length; j++) {
-                    if (newFinais[j] != null) {
-                        if (newIniciais[i].getName().equals(newFinais[j].getName().replace("/", ""))) {
-                            if (pesquisaTagNome(newIniciais[i].getName(), tagsCorretas) == -1) {
-                                tagsCorretas[i] = newIniciais[i];
-                                control = true;
-                                newFinais[j] = null;
-                                break;
-                            }
-                        } else {
-                            control = false;
-                        }
+            for (int j = 0; j < newFinais.length; j++) {
+                if (newFinais[j] != null) {
+                    if (newIniciais[i].getName().equals(newFinais[j].getName().replace("/", ""))) {
+                        tagsCorretasIniciais[i] = newIniciais[i];
+                        control = true;
+                        newFinais[j] = null;
+                        break;
+                    } else {
+                        control = false;
                     }
+                } else {
+                    control = false;
                 }
-                if (!control) {
-                    tagsIncoretas[i] = newIniciais[i];
-                }
+            }
+            if (!control) {
+                tagsIncoretasIniciais[i] = newIniciais[i];
             }
         }
     }
 
-    private void validaTagsFinais(Tag[] iniciais, Tag[] finais) {
+    private static void validaTagsFinais(Tag[] iniciais, Tag[] finais) {
         Tag[] newIniciais = iniciais;
         Tag[] newFinais = finais;
         boolean control = false;
         for (int i = 0; i < newFinais.length; i++) {
-            if (newFinais[i] != null) {
-                for (int j = 0; j < newIniciais.length; j++) {
-                    if (newIniciais[j] != null) { 
-                        if (newFinais[i].getName().replace("/", "").equals(newIniciais[j].getName())) {
-                            if (pesquisaTagNome(newFinais[i].getName(), tagsCorretas) == -1) {
-                                tagsCorretas[i] = newFinais[i];
-                                control = true;
-                                newIniciais[j] = null;
-                                break;
-                            }
-                        } else {
-                            control = false;
-                        }
+            for (int j = 0; j < newIniciais.length; j++) {
+                if (newIniciais[j] != null) {
+                    if (newFinais[i].getName().replace("/", "").equals(newIniciais[j].getName())) {
+                        tagsCorretasFinais[i] = newFinais[i];
+                        control = true;
+                        newIniciais[j] = null;
+                        break;
+                    } else {
+                        control = false;
                     }
-                }
-                if (!control) {
-                    tagsIncoretas[i] = newFinais[i];
+                } else {
+                    control = false;
                 }
             }
-        }
-    }
-    
-    private void repopularPilha(Tag[] vetor, PilhaVetor<String> pilha){
-        for(Tag tag : vetor){
-            if(tag != null){
-                pilha.push(tag.getName());
+            if (!control) {
+                tagsIncoretasFinais[i] = newFinais[i];
             }
         }
     }
 
+    private static void repopularPilha(Tag[] vetor, PilhaVetor<String> pilha) {
+        for (Tag tag : vetor) {
+            if (tag != null) {
+                pilha.push(tag.getName());
+            }
+        }
+    }
 }

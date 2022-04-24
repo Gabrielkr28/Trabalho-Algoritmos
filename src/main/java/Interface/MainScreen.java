@@ -4,10 +4,13 @@
  */
 package Interface;
 
+import Entities.Tag;
 import Service.Analyzer;
+import static Service.Analyzer.converteVetorStringToTag;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -40,6 +43,7 @@ public class MainScreen extends javax.swing.JFrame {
         tbValores = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setAutoRequestFocus(false);
 
         lbArquivo.setText("Arquivo:");
 
@@ -58,15 +62,20 @@ public class MainScreen extends javax.swing.JFrame {
 
         tbValores.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
+
             },
             new String [] {
                 "Tag", "Número de ocorrências"
             }
-        ));
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.Integer.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
         jScrollPane2.setViewportView(tbValores);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -83,7 +92,7 @@ public class MainScreen extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(tfCaminho, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btAnalisar, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)))
+                        .addComponent(btAnalisar, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -96,9 +105,9 @@ public class MainScreen extends javax.swing.JFrame {
                     .addComponent(btAnalisar))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(15, 15, 15))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -110,10 +119,39 @@ public class MainScreen extends javax.swing.JFrame {
             analyzer.fileAnalyzer(tfCaminho.getText());
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, ex.getMessage());
-            try {
-                throw ex;
-            } catch (Exception ex1) {
-                Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex1);
+
+        }
+
+        DefaultTableModel defaultTableModel = (DefaultTableModel) tbValores.getModel();
+        Tag[] tags = analyzer.contarTags();
+        Tag[] tagsSingleton = analyzer.contarTagsSingletons();
+
+        for (Tag tag : tags) {
+            if (tag != null) {
+                Object[] objects = {tag.getName(), tag.getCount()};
+                defaultTableModel.addRow(objects);
+            }
+        }
+
+        for (Tag tag : tagsSingleton) {
+            if (tag != null) {
+                Object[] objects = {tag.getName(), tag.getCount()};
+                defaultTableModel.addRow(objects);
+            }
+        }
+        Tag[] tagsIncorretasFinais = analyzer.getTagsIncorretasFinais();
+        taResultado.append("Tags que foram fechadas e nunca foram abertas:\n");
+        for (Tag tag : tagsIncorretasFinais) {
+            if (tag != null) {
+                taResultado.append(tag.getName() + "\n");
+            }
+        }
+        taResultado.append("____________________________\n\n");
+        Tag[] tagsIncorretasInicias = analyzer.getTagsIncorretasInciais();
+        taResultado.append("Tags que foram abertas e nunca foram fechadas:\n");
+        for (Tag tag : tagsIncorretasInicias) {
+            if (tag != null) {
+                taResultado.append(tag.getName() + "\n");
             }
         }
     }//GEN-LAST:event_btAnalisarActionPerformed
